@@ -47,6 +47,12 @@ export default function ProfilePage() {
       }
     }
 
+    if (!updatedProfile.daily_activity_goal_minutes || Number(updatedProfile.daily_activity_goal_minutes) <= 0) {
+      updatedProfile.daily_activity_goal_minutes = 30;
+    } else {
+      updatedProfile.daily_activity_goal_minutes = Number(updatedProfile.daily_activity_goal_minutes);
+    }
+
     localStorage.setItem('breathewise_profile', JSON.stringify(updatedProfile));
     
     // Also sync to backend if running
@@ -163,13 +169,21 @@ export default function ProfilePage() {
                 <label className="text-xs font-bold text-slate-700 uppercase">Daily Goal (Minutes)</label>
                 <input
                   type="number"
-                  min="10"
-                  max="180"
-                  step="5"
-                  value={profile.daily_activity_goal_minutes}
-                  onChange={(e) =>
-                    setProfile({ ...profile, daily_activity_goal_minutes: parseInt(e.target.value) || 30 })
-                  }
+                  min="5"
+                  max="300"
+                  value={profile.daily_activity_goal_minutes ?? ''}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setProfile({
+                      ...profile,
+                      daily_activity_goal_minutes: val === '' ? ('' as any) : parseInt(val, 10),
+                    });
+                  }}
+                  onBlur={() => {
+                    if (!profile.daily_activity_goal_minutes || Number(profile.daily_activity_goal_minutes) <= 0) {
+                      setProfile({ ...profile, daily_activity_goal_minutes: 30 });
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
                 />
               </div>

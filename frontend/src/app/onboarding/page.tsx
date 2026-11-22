@@ -276,13 +276,21 @@ export default function OnboardingPage() {
                 </label>
                 <input
                   type="number"
-                  min="10"
-                  max="180"
-                  step="5"
-                  value={profile.daily_activity_goal_minutes}
-                  onChange={(e) =>
-                    setProfile({ ...profile, daily_activity_goal_minutes: parseInt(e.target.value) || 30 })
-                  }
+                  min="5"
+                  max="300"
+                  value={profile.daily_activity_goal_minutes ?? ''}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setProfile({
+                      ...profile,
+                      daily_activity_goal_minutes: val === '' ? ('' as any) : parseInt(val, 10),
+                    });
+                  }}
+                  onBlur={() => {
+                    if (!profile.daily_activity_goal_minutes || Number(profile.daily_activity_goal_minutes) <= 0) {
+                      setProfile({ ...profile, daily_activity_goal_minutes: 30 });
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:border-forest-600 focus:ring-forest-600"
                 />
               </div>
@@ -293,13 +301,21 @@ export default function OnboardingPage() {
                 </label>
                 <input
                   type="number"
-                  min="10"
-                  max="120"
-                  step="5"
-                  value={profile.preferred_duration_minutes}
-                  onChange={(e) =>
-                    setProfile({ ...profile, preferred_duration_minutes: parseInt(e.target.value) || 30 })
-                  }
+                  min="5"
+                  max="300"
+                  value={profile.preferred_duration_minutes ?? ''}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setProfile({
+                      ...profile,
+                      preferred_duration_minutes: val === '' ? ('' as any) : parseInt(val, 10),
+                    });
+                  }}
+                  onBlur={() => {
+                    if (!profile.preferred_duration_minutes || Number(profile.preferred_duration_minutes) <= 0) {
+                      setProfile({ ...profile, preferred_duration_minutes: 30 });
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:border-forest-600 focus:ring-forest-600"
                 />
               </div>
