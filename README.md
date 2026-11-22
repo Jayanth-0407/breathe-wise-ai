@@ -1,48 +1,103 @@
 # BreatheWise AI — Pollution-Aware Fitness & Mobility Assistant
 
-> A production-ready web application for people living in cities affected by air pollution. Empowers urban residents to make healthier daily fitness and mobility decisions based on local air quality, weather, location, health vulnerabilities, and personal preferences.
+> **A production-ready environmental health and urban mobility web application designed for city dwellers navigating air pollution.** BreatheWise AI empowers urban residents to plan outdoor fitness, minimize inhaled particulate dosage, find tree-canopied jogging routes, and make scientifically grounded health decisions.
 
 ---
 
-## 🌟 Key Features
+## 🎯 1. Chosen Vertical
 
-1. **Live Air Quality Dashboard (`/dashboard`)**:
-   - Observational $PM_{2.5}$, $PM_{10}$, temperature, humidity, and wind dispersion velocity.
-   - Dual-source ingestion merging verified **OpenAQ** ground monitoring stations with **Open-Meteo Planetary Air Quality Models**.
-   - 24-hour diurnal forecast trend capturing convective boundary layer mixing vs morning thermal inversions.
-   - Personalized health guidance based on individual vulnerability (age group, asthma status) without distorting official AQI category breakpoints.
+**Vertical:** **Urban Environmental Health, Preventive Wellness & Sustainable Mobility**
 
-2. **AI Route Explorer & Jogging Loop Planner (`/routes`)**:
-   - Interactive **MapLibre GL JS** map with OpenStreetMap cartography.
-   - **Goal-Based Jogging Loops**: Generates closed-circuit jogging paths snapped to actual OpenStreetMap pedestrian footpaths and sidewalks via **OSRM**, fulfilling your exact daily fitness goal (3 km, 5 km, 7.5 km, 10 km) with minimum particulate exposure.
-   - **Point-to-Point Navigation**: Up to 3 comparative alternatives: **Lowest Exposure**, **Greenest**, and **Fastest**.
-   - Transparent proxy indicators evaluating traffic arterial proximity and tree canopy buffers.
+Rapid urbanization and atmospheric stagnation create hazardous air quality across major metropolitan areas worldwide. Traditional weather apps provide generic city-wide AQI numbers without actionable fitness guidance. 
 
-3. **Predictive Best Time to Exercise (`/best-time`)**:
-   - Analyzes planetary boundary layer convective dilution and nocturnal inversion cycles across 24 hours.
-   - Ranks the top 3 activity windows with recommendation scores (0–100), suitability classifications (**Optimal**, **Acceptable**, **Caution**, **Avoid**), and meteorological summaries.
+BreatheWise AI bridges the gap between **environmental meteorology**, **human respiratory physiology**, and **urban mobility**. Rather than telling users to stay home indefinitely, it provides **exposure-minimized route alternatives**, **optimal exercise windows based on thermal inversion cycles**, and **exact inhaled particulate dose calculations**.
 
-4. **Deterministic Pollution Exposure Estimator**:
-   - Models inhaled particulate intake dose ($\mu\text{g}$ of $PM_{2.5}$) based on minute ventilation rates ($V_E = V_0 \times \text{MET}$), activity duration, and route traffic proximity factors.
-   - Compares acute intake against the WHO 24-hour air quality guidelines.
+---
 
-5. **Grounded AI Assistant & RAG (`/assistant`)**:
-   - Multi-tool agent orchestration using **LangGraph** and **Groq** (`llama-3.3-70b-versatile`).
-   - Grounded RAG knowledge base indexing **WHO Global Air Quality Guidelines 2021**, **CPCB National Air Quality Index**, **CDC/NIOSH N95 respirator certifications**, and **US EPA HEPA standards**.
-   - Generates exact factual citations with documentation links.
+## 🧠 2. Approach & Scientific Logic
 
-6. **Indoor Exercise Sanctuary & Clean Air Guide (`/indoor`)**:
-   - Structured routines (Indoor Walking, Restorative Lung Mobility Yoga, Low-Impact Cardio, Bodyweight Strength) when ambient AQI is hazardous.
-   - Practical HEPA air filtration sizing guidance (EPA 2/3 room floor area rule) and cross-ventilation timing.
+BreatheWise AI is engineered around deterministic scientific formulas, meteorological physics, and agentic AI orchestration:
 
-7. **Activity Tracking & Low-Emission Lifestyle Insights (`/activity`)**:
-   - Manual activity logging, weekly fitness goal progress, and session history.
-   - **Emissions Calculator**: Quantifies avoided $CO_2e$ greenhouse gas emissions, local tailpipe $PM_{2.5}$, and toxic $NO_x$ avoided by choosing walking or cycling over motor vehicles (DEFRA 2023 factors).
-   - Clear scientific distinction between global GHG warming potential and acute localized toxic air pollutants.
+### A. Deterministic Human Inhaled Dose Estimation
+We calculate the cumulative inhaled particulate mass ($\mu\text{g}$ of $PM_{2.5}$) using physiological minute ventilation formulas:
 
-8. **User Profile & Privacy Governance (`/profile` & `/onboarding`)**:
-   - Strict data minimization: no continuous background GPS tracking without consent.
-   - Data sovereignty controls: **Export My Data (JSON)** and **Delete Profile & Clear Activity Data**.
+$$\text{Ventilation Rate } (V_E) = V_0 \times \text{MET}$$
+$$\text{Inhaled Dose } (\mu\text{g}) = V_E \times \text{Duration (min)} \times \text{Effective } PM_{2.5} \times 10^{-3}$$
+
+- **$V_0$ (Baseline Ventilation):** $\approx 0.006 \text{ m}^3/\text{min}$ for healthy adults.
+- **$\text{MET}$ (Metabolic Equivalent of Task):** 
+  - Rest/Yoga: $1.5 - 2.5\text{ MET}$
+  - Brisk Walking: $3.5 - 4.5\text{ MET}$
+  - Outdoor Jogging: $7.0 - 9.0\text{ MET}$
+  - Fast Cycling: $8.0 - 10.0\text{ MET}$
+- **Effective Concentration:** Ambient $PM_{2.5}$ modified by proximity to arterial roadways (e.g., $1.25\times$ near highways vs $0.82\times$ along residential parkways).
+
+### B. Atmospheric Boundary Layer & Thermal Inversion Modeling
+Urban air pollution follows a diurnal curve dictated by solar radiation and planetary boundary layer (PBL) dynamics:
+- **Night & Early Morning (Thermal Inversion):** Radiation cooling traps vehicle tailpipe emissions near ground level ($06:00 - 08:30$). High risk of acute respiratory distress.
+- **Midday to Afternoon (Convective Dilution):** Solar heating drives turbulent thermal mixing, expanding the mixing height ($1000 - 2000\text{ m}$) and significantly diluting ground particulates ($11:00 - 16:30$).
+- BreatheWise AI computes hourly recommendation scores ($0 - 100$) by pairing boundary layer convective forecast indices with real-time temperature, wind dispersion, and hourly $PM_{2.5}$ trends.
+
+### C. Road-Snapped Goal-Based Jogging Circuit Engine
+Instead of drawing geometric polygons across city blocks, BreatheWise AI computes realistic jogging circuits:
+1. Calculates target circle radius from daily distance: $R = \frac{\text{Distance}}{2 \pi \times 1.35}$ (accounting for urban street winding factor).
+2. Computes directional cardinal waypoints around parks and quiet residential avenues.
+3. Queries the **OSRM** walking routing engine (`/route/v1/walking/...`) to generate 150–250+ turn-by-turn road vertices tracing real sidewalks and pedestrian paths back to the origin.
+
+### D. Grounded LangGraph Agentic Architecture
+The conversational assistant (`/assistant`) uses a compiled **LangGraph `StateGraph`**:
+- **`retrieve_rag` Node:** Semantic vector search against verified documentation from WHO 2021, CPCB NAQI, US EPA, and NIOSH.
+- **`execute_tools` Node:** Dispatches real-time tools based on user intent (`tool_get_current_aqi`, `tool_get_exercise_windows`, `tool_estimate_exposure`).
+- **`synthesize_response` Node:** Injects active user location context and tool outputs into **Groq LLM (`llama-3.3-70b-versatile`)** with strict factual guardrails and structured citation cards.
+
+---
+
+## ⚙️ 3. How the Solution Works
+
+```mermaid
+flowchart TD
+    User([Urban Resident]) --> UI[Next.js 14 Frontend App Router]
+    
+    subgraph Frontend Pages
+        UI --> Dash["/dashboard (Live AQI & Map)"]
+        UI --> Routes["/routes (Jogging Loops & OSRM)"]
+        UI --> BestTime["/best-time (24h Inversion Analysis)"]
+        UI --> Chat["/assistant (LangGraph AI Chat)"]
+        UI --> Indoor["/indoor (HEPA Clean Air Guide)"]
+        UI --> Activity["/activity (Avoided Emissions)"]
+    end
+    
+    subgraph FastAPI Backend & Services
+        Dash & Routes & BestTime & Chat --> API[FastAPI REST API v1]
+        API --> OM[Open-Meteo Air Quality & Weather Ingestion]
+        API --> OAQ[OpenAQ v3 Ground Station Fallback]
+        API --> OSRM[OSRM Street-Snapped Walking Engine]
+        API --> RAG[Environmental RAG Knowledge Base]
+        API --> LG[LangGraph StateGraph Workflow]
+        LG --> Groq[Groq Llama-3.3-70b Inference]
+    end
+    
+    subgraph Data & Storage
+        API --> DB[(Render PostgreSQL / Local Resilient SQLite)]
+        UI --> LS[(Client-Side Encrypted LocalStorage)]
+    end
+```
+
+### End-to-End User Flow:
+1. **Onboarding & Location Selection:** The user defines their home city, vulnerability factors (asthma, age group), and daily workout targets. Coordinates are resolved via high-precision local registries and geocoding fallbacks.
+2. **Dashboard Atmospheric Monitoring:** Real-time $PM_{2.5}$, $PM_{10}$, temperature, wind speed, and an interactive MapLibre GL station map give immediate environmental awareness.
+3. **Route Planning:** User types an exact distance goal (e.g. `4.5 km`) and a starting neighborhood (e.g. `Anna Nagar`). The engine recommends 3 distinct circuits: **Lowest Exposure** (residential streets), **Greenest** (parks & botanical buffers), and **Fastest** (paved avenues).
+4. **Interactive AI Guidance:** The user asks questions in natural language. The assistant automatically incorporates their active city, queries live local monitors, and synthesizes answers with WHO/CPCB source citations.
+
+---
+
+## 📌 4. Assumptions Made
+
+1. **Station Proximity & Grid Resolution:** Open-Meteo planetary model operates on an 11 km atmospheric grid. While verified ground stations (OpenAQ) are prioritized, microclimatic street canyon effects can vary based on heavy vehicular idling.
+2. **Pedestrian Speed & Route Factor:** Walking speed is modeled at $4.8\text{ km/h}$, recreational jogging at $9.0\text{ km/h}$, and cycling at $15.0\text{ km/h}$. The urban street winding factor is estimated at $1.35$ for circle perimeter loops.
+3. **Vegetative Filtration Factor:** Green buffer exposure reductions ($14\% - 18\%$ reduction in effective $PM_{2.5}$) assume mature canopy cover and foliage density based on published urban forestry studies.
+4. **Avoided Emissions Baseline:** The low-emission mobility calculator assumes displaced travel replaces an average passenger petrol vehicle producing $170\text{ g } CO_2e/\text{km}$, $0.003\text{ g } PM_{2.5}/\text{km}$, and $0.18\text{ g } NO_x/\text{km}$ (UK DEFRA 2023 factors).
+5. **Medical Non-Diagnosis:** The application explicitly assumes and states that guidance does not constitute direct medical diagnosis or clinical treatment.
 
 ---
 
@@ -52,112 +107,39 @@
 |---|---|
 | **Frontend** | Next.js 14 (App Router), React, TypeScript, Tailwind CSS, Lucide Icons, MapLibre GL JS |
 | **Backend** | Python 3.11, FastAPI, Pydantic v2, SQLAlchemy, Uvicorn, Cachetools |
-| **AI & RAG** | LangGraph, Groq API (`llama-3.3-70b-versatile`), RAG Knowledge Store |
-| **Geospatial & Routing** | OpenStreetMap (OSM), Open Source Routing Machine (OSRM demo API) |
-| **Environmental Data** | Open-Meteo Air Quality & Weather API (open access, no key required), OpenAQ v3 API |
-| **Database** | Render PostgreSQL (or local SQLite fallback) |
-| **Deployment** | Docker, Docker Compose, Render (Backend), Vercel (Frontend) |
+| **AI & Orchestration** | LangGraph (`StateGraph`), Groq API (`llama-3.3-70b-versatile`), Environmental RAG |
+| **Geospatial & Routing** | OpenStreetMap (OSM), Open Source Routing Machine (OSRM demo API), Photon Geocoder |
+| **Environmental Ingestion** | Open-Meteo Air Quality & Weather API (open access), OpenAQ v3 API |
+| **Database** | Render PostgreSQL (with automatic local SQLite resilient fallback) |
+| **Deployment** | Docker, Docker Compose, Render (Backend Web Service), Vercel (Frontend Next.js) |
 
 ---
 
-## 🚀 Local Development Setup
+## 🚀 Quick Start Guide
 
-### 1. Prerequisites
-- **Python 3.11+** installed
-- **Node.js v20+ / v22+** and `npm` installed
-- (Optional) **Docker Desktop** installed
-
-### 2. Backend Setup
+### 1. Clone & Set Up Backend
 ```powershell
-cd d:\A_prompt_wars_AQI\backend
-
-# Activate virtual environment
+cd backend
+python -m venv .venv
 .\.venv\Scripts\activate
-
-# Install dependencies (if not already installed)
 pip install -r requirements.txt
-
-# Run FastAPI backend with hot-reloading
 uvicorn app.main:app --reload --port 8000
 ```
-- Health Check: `http://localhost:8000/health`
-- Interactive Swagger API Documentation: `http://localhost:8000/docs`
+- API Health Check: `http://localhost:8000/health`
+- Interactive Swagger Docs: `http://localhost:8000/docs`
 
-### 3. Frontend Setup
-In a new terminal:
+### 2. Set Up Frontend
 ```powershell
-cd d:\A_prompt_wars_AQI\frontend
-
-# Run Next.js in development mode
+cd frontend
+npm install
 npm run dev
 ```
-- Open your browser at: **`http://localhost:3000`**
-
-### 4. Running via Docker Compose
-To launch both frontend and backend in isolated containers:
-```powershell
-docker-compose up --build
-```
+- Open `http://localhost:3000` in your browser.
 
 ---
 
-## 🧪 Automated Testing
+## 🔒 Security & Privacy Architecture
 
-The backend includes a comprehensive pytest test suite covering health checks, observational AQI ingestion, forecast parsing, OSRM routing, jogging loops, profile CRUD, exercise windows, exposure modeling, AI chat, indoor workouts, activity logs, and emissions math:
-
-```powershell
-cd d:\A_prompt_wars_AQI\backend
-.\.venv\Scripts\python.exe -m pytest -v
-```
-**Test Result: 13 of 13 tests passing.**
-
----
-
-## 🌐 Production Deployment Guide
-
-### A. Deploy FastAPI Backend on Render
-1. Push your repository to GitHub.
-2. In the [Render Dashboard](https://dashboard.render.com), click **New + > Web Service**.
-3. Select your GitHub repository.
-4. Set:
-   - **Root Directory**: `backend`
-   - **Runtime**: `Python 3` (or choose `Docker`)
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-5. Configure Environment Variables in Render:
-   - `ENVIRONMENT`: `production`
-   - `ALLOWED_ORIGINS`: `https://your-frontend.vercel.app`
-   - `DATABASE_URL`: Your Supabase PostgreSQL connection string (or use Render Postgres)
-   - `GROQ_API_KEY`: Your Groq API key (optional for LLM inference)
-   - `GROQ_MODEL`: `llama-3.3-70b-versatile`
-6. Click **Create Web Service**. Your backend health check will be at:
-   `https://your-backend.onrender.com/health`
-
-### B. Deploy Frontend on Vercel
-1. In the [Vercel Dashboard](https://vercel.com), click **Add New > Project** and import the repository.
-2. Set:
-   - **Root Directory**: `frontend`
-   - **Framework Preset**: `Next.js`
-3. Add Environment Variable:
-   - `NEXT_PUBLIC_API_URL`: `https://your-backend.onrender.com`
-4. Click **Deploy**. Vercel will build and deploy the application with global CDN caching.
-
-### C. Render PostgreSQL Setup (Automated via Blueprint)
-1. When you deploy via `render.yaml`, Render automatically creates the `breathewise-db` PostgreSQL instance.
-2. The internal connection string is automatically linked to your backend service.
-3. If setting up manually in the Render Dashboard:
-   - Click **New + > PostgreSQL**, name it `breathewise-db`.
-   - Copy the **Internal Database URL** and set it as `DATABASE_URL` in your backend environment variables.
-   - The backend auto-initializes all tables on startup. Optionally, you can execute `backend/migrations/001_initial_schema.sql` via psql or pgAdmin.
-
----
-
-## ⚖️ Scientific Disclosures & Governance
-- **Proxy Indicators**: Proximity to roadways and tree canopy coverage are proxy indicators evaluated from OpenStreetMap data. They do not constitute direct microclimate street sensors.
-- **Exposure Dose**: The inhaled particulate dose is calculated as an estimated intake proxy ($C \times V_E \times t$). It does not model individual clinical alveolar deposition or medical diagnosis.
-- **Medical Disclaimer**: BreatheWise AI provides environmental and atmospheric risk mitigation recommendations. Always consult a qualified healthcare provider for clinical medical advice.
-
-
-<!-- cd d:\A_prompt_wars_AQI\backend
-.\.venv\Scripts\activate
-uvicorn app.main:app --reload --port 8000 -->
+- **Zero Credentials in Code:** All keys and database URLs are loaded strictly through `.env` files via Pydantic `BaseSettings`.
+- **CORS Defense:** Backend enforces `allow_origin_regex` to restrict access strictly to trusted domains and Vercel production deployments.
+- **Data Sovereignty:** Full GDPR-compliant data export (`/profile`) allows users to download their activity records as JSON or permanently wipe local tracking.
