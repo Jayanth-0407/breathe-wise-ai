@@ -48,7 +48,7 @@ Instead of drawing geometric polygons across city blocks, BreatheWise AI compute
 The conversational assistant (`/assistant`) uses a compiled **LangGraph `StateGraph`**:
 - **`retrieve_rag` Node:** Semantic vector search against verified documentation from WHO 2021, CPCB NAQI, US EPA, and NIOSH.
 - **`execute_tools` Node:** Dispatches real-time tools based on user intent (`tool_get_current_aqi`, `tool_get_exercise_windows`, `tool_estimate_exposure`).
-- **`synthesize_response` Node:** Injects active user location context and tool outputs into **Groq LLM (`llama-3.3-70b-versatile`)** with strict factual guardrails and structured citation cards.
+- **`synthesize_response` Node:** Injects active user location context and tool outputs into **Groq LLM (`qwen/qwen3.8-27b`)** with strict factual guardrails and structured citation cards.
 
 ---
 
