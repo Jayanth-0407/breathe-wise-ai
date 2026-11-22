@@ -176,8 +176,8 @@ export default function RoutesPage() {
         goal_fulfillment_pct: 100,
         exposure_score: 28.5,
         exposure_tier: 'Low',
-        traffic_proximity_proxy: 'Low (Neighborhood parkways)',
-        green_space_proxy: 'Extensive (Tree Canopy)',
+        traffic_proximity_proxy: 'Low',
+        green_space_proxy: 'Extensive',
         explanation: `Traced along quiet local corridors and parks to achieve your ${goalKm} km target with lowest exposure.`,
         data_uncertainty: 'OSRM pedestrian road network',
         coordinates: [
@@ -198,7 +198,7 @@ export default function RoutesPage() {
         exposure_score: 32.0,
         exposure_tier: 'Low',
         traffic_proximity_proxy: 'Low',
-        green_space_proxy: 'Extensive (Botanical buffers)',
+        green_space_proxy: 'Extensive',
         explanation: 'Circuits through tree-canopied paths and open recreational areas, maximizing vegetative filtration.',
         data_uncertainty: 'OSRM pedestrian road network',
         coordinates: [

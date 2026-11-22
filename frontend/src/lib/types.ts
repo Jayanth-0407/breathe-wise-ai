@@ -56,14 +56,14 @@ export interface ExerciseWindow {
 export interface RouteAlternative {
   id: string;
   name: string;
-  tag: 'Lowest Exposure' | 'Greenest' | 'Fastest';
+  tag: 'Lowest Exposure' | 'Greenest' | 'Fastest' | string;
   distance_km: number;
   duration_minutes: number;
   goal_fulfillment_pct?: number;
   exposure_score: number;
-  exposure_tier: 'Low' | 'Moderate' | 'Elevated' | 'High';
-  traffic_proximity_proxy: 'Low' | 'Moderate' | 'High';
-  green_space_proxy: 'Extensive' | 'Moderate' | 'Minimal';
+  exposure_tier: 'Low' | 'Moderate' | 'Elevated' | 'High' | string;
+  traffic_proximity_proxy: 'Low' | 'Moderate' | 'High' | string;
+  green_space_proxy: 'Extensive' | 'Moderate' | 'Minimal' | string;
   explanation: string;
   data_uncertainty: string;
   coordinates: [number, number][]; // [lon, lat] for MapLibre
