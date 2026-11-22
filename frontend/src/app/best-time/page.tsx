@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { ExerciseWindow, UserProfile } from '@/lib/types';
 import { DEFAULT_USER_PROFILE } from '@/lib/api';
+import { getStoredProfile } from '@/lib/profile';
 
 const CITY_PRESETS = [
   { name: 'Chennai', lat: 13.0827, lon: 80.2707 },
@@ -39,26 +40,17 @@ export default function BestTimePage() {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem('breathewise_profile');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setProfile(parsed);
-        if (parsed.preferred_duration_minutes) {
-          setSessionDuration(parsed.preferred_duration_minutes);
-        }
-        if (parsed.default_city) {
-          let lat = parsed.default_lat;
-          let lon = parsed.default_lon;
-          if (parsed.default_city.toLowerCase().includes('chennai') && (lat > 20 || !lat)) {
-            lat = 13.0827;
-            lon = 80.2707;
-          }
-          if (lat && lon) {
-            setSelectedCity({ name: parsed.default_city, lat, lon });
-          }
-        }
-      } catch (e) {}
+    const stored = getStoredProfile();
+    setProfile(stored);
+    if (stored.preferred_duration_minutes) {
+      setSessionDuration(stored.preferred_duration_minutes);
+    }
+    if (stored.default_city && stored.default_lat && stored.default_lon) {
+      setSelectedCity({
+        name: stored.default_city,
+        lat: stored.default_lat,
+        lon: stored.default_lon,
+      });
     }
   }, []);
 

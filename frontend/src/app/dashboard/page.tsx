@@ -27,6 +27,7 @@ import { formatAQICategory } from '@/lib/utils';
 import { LiveAirQuality, HourlyForecast, UserProfile } from '@/lib/types';
 import { fetchLiveAirQuality, fetchAirQualityForecast, DEFAULT_USER_PROFILE } from '@/lib/api';
 import { resolveCityCoordinates } from '@/lib/cities';
+import { getStoredProfile } from '@/lib/profile';
 
 // Dynamically import StationMap with SSR disabled (MapLibre requires window/WebGL)
 const StationMap = dynamic(() => import('@/components/map/StationMap'), {
@@ -58,30 +59,15 @@ export default function DashboardPage() {
   const [searching, setSearching] = useState<boolean>(false);
 
   useEffect(() => {
-    // Load local profile if saved
-    const saved = localStorage.getItem('breathewise_profile');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setProfile(parsed);
-        // If profile has city, match or set
-        if (parsed.default_city) {
-          let lat = parsed.default_lat;
-          let lon = parsed.default_lon;
-          // Auto-correct if user previously saved Chennai with Delhi's default coords
-          if (parsed.default_city.toLowerCase().includes('chennai') && (lat > 20 || !lat)) {
-            lat = 13.0827;
-            lon = 80.2707;
-          }
-          if (lat && lon) {
-            setSelectedCity({
-              name: parsed.default_city,
-              lat,
-              lon,
-            });
-          }
-        }
-      } catch (e) { }
+    // Load consolidated profile from Single Source of Truth
+    const stored = getStoredProfile();
+    setProfile(stored);
+    if (stored.default_city && stored.default_lat && stored.default_lon) {
+      setSelectedCity({
+        name: stored.default_city,
+        lat: stored.default_lat,
+        lon: stored.default_lon,
+      });
     }
   }, []);
 

@@ -18,6 +18,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { ChatMessage } from '@/lib/types';
+import { getStoredActiveLocation } from '@/lib/profile';
 
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
@@ -139,44 +140,9 @@ export default function AssistantPage() {
     scrollToBottom();
   }, [messages]);
 
-  // Load user's selected location from route planner or profile
+  // Load user's active geographic context from Single Source of Truth
   useEffect(() => {
-    const savedLoc = localStorage.getItem('breathewise_active_route_location');
-    if (savedLoc) {
-      try {
-        const parsed = JSON.parse(savedLoc);
-        if (parsed && parsed.coords) {
-          setActiveLocation({
-            name: parsed.name,
-            city: parsed.city || parsed.name.split(':')[0] || 'Chennai',
-            lat: parsed.coords[0],
-            lon: parsed.coords[1],
-          });
-          return;
-        }
-      } catch (e) {}
-    }
-
-    const savedProfile = localStorage.getItem('breathewise_profile');
-    if (savedProfile) {
-      try {
-        const parsed = JSON.parse(savedProfile);
-        if (parsed.default_city) {
-          let lat = parsed.default_lat || 13.0827;
-          let lon = parsed.default_lon || 80.2707;
-          if (parsed.default_city.toLowerCase().includes('chennai') && (lat > 20 || !lat)) {
-            lat = 13.0827;
-            lon = 80.2707;
-          }
-          setActiveLocation({
-            name: parsed.default_city,
-            city: parsed.default_city,
-            lat,
-            lon,
-          });
-        }
-      } catch (e) {}
-    }
+    setActiveLocation(getStoredActiveLocation());
   }, []);
 
   const handleSendMessage = async (textToSend?: string) => {

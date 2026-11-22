@@ -1,17 +1,37 @@
+/**
+ * BreatheWise AI - Shared UI Formatting Utilities
+ * ===============================================
+ * Tailwind className merge utilities and EPA AQI health classification descriptors.
+ */
+
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-export function cn(...inputs: ClassValue[]) {
+/**
+ * Combines conditional CSS classes and merges conflicting Tailwind classes.
+ *
+ * @param inputs List of class values, objects, or arrays
+ * @returns Deduplicated className string
+ */
+export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
-export function formatAQICategory(aqi: number): {
+export interface AQICategoryDescriptor {
   label: string;
   badgeBg: string;
   badgeText: string;
   borderColor: string;
   description: string;
-} {
+}
+
+/**
+ * Formats numeric Air Quality Index (US EPA AQI) into standardized UI styling and health advisory copy.
+ *
+ * @param aqi Numerical AQI score (0 - 500+)
+ * @returns AQICategoryDescriptor containing badges, colors, and human-readable guidance
+ */
+export function formatAQICategory(aqi: number): AQICategoryDescriptor {
   if (aqi <= 50) {
     return {
       label: "Good",

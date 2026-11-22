@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/Badge';
 import { RouteAlternative, UserProfile } from '@/lib/types';
 import { DEFAULT_USER_PROFILE } from '@/lib/api';
 import { resolveLocationCoordinates } from '@/lib/cities';
+import { getStoredProfile, getStoredGoalKm, saveStoredGoalKm } from '@/lib/profile';
 
 // Dynamically import RouteMap with SSR disabled (MapLibre requires window/WebGL)
 const RouteMap = dynamic(() => import('@/components/map/RouteMap'), {
@@ -116,28 +117,15 @@ export default function RoutesPage() {
 
   useEffect(() => {
     // 1. Restore typed goal if previously set by user
-    const savedGoal = localStorage.getItem('breathewise_target_goal_km');
-    if (savedGoal) {
-      const parsedGoal = parseFloat(savedGoal);
-      if (!isNaN(parsedGoal) && parsedGoal > 0) {
-        setTargetGoalKm(parsedGoal);
-        setGoalInput(parsedGoal.toString());
-      }
-    }
+    const savedGoal = getStoredGoalKm(5.0);
+    setTargetGoalKm(savedGoal);
+    setGoalInput(savedGoal.toString());
 
-    // 2. Load user profile for health and city context
-    let currentCity = 'Chennai';
-    const saved = localStorage.getItem('breathewise_profile');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setProfile(parsed);
-        if (parsed.default_city) {
-          currentCity = parsed.default_city;
-          setActiveCity(parsed.default_city);
-        }
-      } catch (e) {}
-    }
+    // 2. Load user profile for health and city context from SSOT
+    const storedProfile = getStoredProfile();
+    setProfile(storedProfile);
+    const currentCity = storedProfile.default_city || 'Chennai';
+    setActiveCity(currentCity);
 
     // 3. Restore last chosen location if available and matches active city
     const savedLoc = localStorage.getItem('breathewise_active_route_location');
@@ -506,7 +494,7 @@ export default function RoutesPage() {
                       const num = parseFloat(str);
                       if (!isNaN(num) && num >= 0.5 && num <= 30.0) {
                         setTargetGoalKm(num);
-                        localStorage.setItem('breathewise_target_goal_km', num.toString());
+                        saveStoredGoalKm(num);
                       }
                     }}
                     onBlur={() => {
@@ -514,7 +502,7 @@ export default function RoutesPage() {
                       if (isNaN(num) || num < 0.5) {
                         setGoalInput('5.0');
                         setTargetGoalKm(5.0);
-                        localStorage.setItem('breathewise_target_goal_km', '5.0');
+                        saveStoredGoalKm(5.0);
                       }
                     }}
                     placeholder="e.g. 5.0"
@@ -533,7 +521,7 @@ export default function RoutesPage() {
                       onClick={() => {
                         setGoalInput(km.toString());
                         setTargetGoalKm(km);
-                        localStorage.setItem('breathewise_target_goal_km', km.toString());
+                        saveStoredGoalKm(km);
                       }}
                       className={`px-2 py-1.5 rounded-md text-xs font-bold transition border ${
                         targetGoalKm === km

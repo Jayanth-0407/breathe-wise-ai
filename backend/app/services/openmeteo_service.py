@@ -1,28 +1,80 @@
+"""
+BreatheWise AI - Open-Meteo Planetary Atmospheric Service
+=========================================================
+Interfaces with the Open-Meteo European and Planetary Atmospheric Modeling API
+to retrieve real-time and multi-day hourly forecasts for criteria air pollutants
+(PM2.5, PM10, US EPA AQI) and surface boundary meteorological parameters
+(temperature, relative humidity, wind speed, and direction).
+"""
+
 import httpx
 import logging
-from typing import Dict, Any, Optional
+from datetime import datetime
+from typing import Dict, Any, List, Final
 from app.config import settings
 from app.core.cache import aq_cache
 
 logger = logging.getLogger(__name__)
 
+# --- Atmospheric & HTTP Defaults ---
+OPENMETEO_REQUEST_TIMEOUT_SECONDS: Final[float] = 6.0
+OPENMETEO_FORECAST_TIMEOUT_SECONDS: Final[float] = 8.0
+
+# US EPA AQI Category Breakpoints
+AQI_GOOD_MAX: Final[int] = 50
+AQI_MODERATE_MAX: Final[int] = 100
+AQI_UNHEALTHY_SENSITIVE_MAX: Final[int] = 150
+AQI_UNHEALTHY_MAX: Final[int] = 200
+AQI_VERY_UNHEALTHY_MAX: Final[int] = 300
+
+# Fallback Atmospheric Defaults if external server is unreachable
+DEFAULT_PM25_FALLBACK: Final[float] = 25.0
+DEFAULT_PM10_FALLBACK: Final[float] = 45.0
+DEFAULT_AQI_FALLBACK: Final[int] = 78
+DEFAULT_TEMP_FALLBACK: Final[float] = 24.0
+DEFAULT_HUMIDITY_FALLBACK: Final[float] = 55.0
+DEFAULT_WIND_SPEED_FALLBACK: Final[float] = 10.0
+DEFAULT_WIND_DIR_FALLBACK: Final[float] = 180.0
+
+
 class OpenMeteoService:
+    """Service retrieving real-time atmospheric measurements and forecast arrays."""
+
     @staticmethod
     def get_aqi_category(us_aqi: int) -> str:
-        if us_aqi <= 50:
+        """
+        Translates numerical US EPA AQI score into standard health descriptor category.
+
+        Args:
+            us_aqi: Numerical air quality index (0-500).
+
+        Returns:
+            Standard health category string.
+        """
+        if us_aqi <= AQI_GOOD_MAX:
             return "Good"
-        elif us_aqi <= 100:
+        elif us_aqi <= AQI_MODERATE_MAX:
             return "Moderate"
-        elif us_aqi <= 150:
+        elif us_aqi <= AQI_UNHEALTHY_SENSITIVE_MAX:
             return "Unhealthy for Sensitive Groups"
-        elif us_aqi <= 200:
+        elif us_aqi <= AQI_UNHEALTHY_MAX:
             return "Unhealthy"
-        elif us_aqi <= 300:
+        elif us_aqi <= AQI_VERY_UNHEALTHY_MAX:
             return "Very Unhealthy"
         return "Hazardous"
 
     @classmethod
     async def get_live_air_quality(cls, lat: float, lon: float) -> Dict[str, Any]:
+        """
+        Fetches live ambient criteria pollutants and local weather conditions.
+
+        Args:
+            lat: Latitude coordinate.
+            lon: Longitude coordinate.
+
+        Returns:
+            Dictionary containing live AQI, pollutant concentrations, and meteorological variables.
+        """
         cache_key = f"om_live_{round(lat, 3)}_{round(lon, 3)}"
         cached = aq_cache.get(cache_key)
         if cached:
@@ -32,16 +84,16 @@ class OpenMeteoService:
         url_aq = f"{settings.OPENMETEO_BASE_URL}?latitude={lat}&longitude={lon}&current=pm10,pm2_5,european_aqi,us_aqi"
         url_wx = f"{settings.OPENMETEO_WEATHER_URL}?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m"
 
-        pm25 = 25.0
-        pm10 = 45.0
-        us_aqi = 78
-        temp = 24.0
-        humidity = 55.0
-        wind_speed = 10.0
-        wind_dir = 180.0
+        pm25 = DEFAULT_PM25_FALLBACK
+        pm10 = DEFAULT_PM10_FALLBACK
+        us_aqi = DEFAULT_AQI_FALLBACK
+        temp = DEFAULT_TEMP_FALLBACK
+        humidity = DEFAULT_HUMIDITY_FALLBACK
+        wind_speed = DEFAULT_WIND_SPEED_FALLBACK
+        wind_dir = DEFAULT_WIND_DIR_FALLBACK
         timestamp = ""
 
-        async with httpx.AsyncClient(timeout=6.0) as client:
+        async with httpx.AsyncClient(timeout=OPENMETEO_REQUEST_TIMEOUT_SECONDS) as client:
             try:
                 res_aq = await client.get(url_aq)
                 if res_aq.status_code == 200:
@@ -68,7 +120,7 @@ class OpenMeteoService:
 
         category = cls.get_aqi_category(us_aqi)
 
-        result = {
+        result: Dict[str, Any] = {
             "aqi": us_aqi,
             "category": category,
             "dominant_pollutant": "PM2.5",
@@ -89,6 +141,17 @@ class OpenMeteoService:
 
     @classmethod
     async def get_hourly_forecast(cls, lat: float, lon: float, days: int = 3) -> Dict[str, Any]:
+        """
+        Fetches hourly air quality and meteorological forecast series for a target coordinate.
+
+        Args:
+            lat: Latitude coordinate.
+            lon: Longitude coordinate.
+            days: Forecast horizon in days (default 3).
+
+        Returns:
+            Dictionary containing list of hourly atmospheric forecast items.
+        """
         cache_key = f"om_forecast_{round(lat, 3)}_{round(lon, 3)}_{days}"
         cached = aq_cache.get(cache_key)
         if cached:
@@ -97,8 +160,8 @@ class OpenMeteoService:
         url = f"{settings.OPENMETEO_BASE_URL}?latitude={lat}&longitude={lon}&hourly=pm10,pm2_5,us_aqi&forecast_days={days}"
         url_wx = f"{settings.OPENMETEO_WEATHER_URL}?latitude={lat}&longitude={lon}&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m&forecast_days={days}"
 
-        hourly_items = []
-        async with httpx.AsyncClient(timeout=8.0) as client:
+        hourly_items: List[Dict[str, Any]] = []
+        async with httpx.AsyncClient(timeout=OPENMETEO_FORECAST_TIMEOUT_SECONDS) as client:
             try:
                 res_aq = await client.get(url)
                 res_wx = await client.get(url_wx)
@@ -136,7 +199,7 @@ class OpenMeteoService:
             except Exception as e:
                 logger.warning(f"Open-Meteo Forecast fallback: {e}")
 
-        # If empty, construct 24h baseline
+        # If external API fails, construct diurnal baseline curve
         if not hourly_items:
             for h in range(24):
                 base_aqi = 70 + (40 if (7 <= h <= 9 or 20 <= h <= 22) else -25 if 13 <= h <= 16 else 0)
@@ -151,13 +214,13 @@ class OpenMeteoService:
                     "wind_speed": 10.0,
                 })
 
-        result = {
-            "location": f"Coordinates ({round(lat, 3)}, {round(lon, 3)})",
+        result_forecast = {
+            "location": f"Atmospheric Grid ({round(lat, 3)}, {round(lon, 3)})",
             "latitude": lat,
             "longitude": lon,
+            "source": "Open-Meteo European Air Quality Model",
+            "generated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
             "hourly": hourly_items,
-            "source": "Open-Meteo High-Resolution Forecasting",
-            "generated_at": "Live",
         }
-        aq_cache.set(cache_key, result, ttl_seconds=settings.AIR_QUALITY_CACHE_TTL)
-        return result
+        aq_cache.set(cache_key, result_forecast, ttl_seconds=settings.AIR_QUALITY_CACHE_TTL)
+        return result_forecast

@@ -1,3 +1,10 @@
+/**
+ * BreatheWise AI - Geospatial Geocoding & Landmark Directory
+ * ==========================================================
+ * Provides local landmark gazetteers, aliases, and cascading geocoder fallbacks
+ * (Local aliases -> Popular cities -> Photon OpenStreetMap -> Open-Meteo Geocoding).
+ */
+
 export interface CityCoordinates {
   name: string;
   lat: number;

@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/Badge';
 import { UserProfile } from '@/lib/types';
 import { DEFAULT_USER_PROFILE } from '@/lib/api';
 import { resolveCityCoordinates, POPULAR_CITIES } from '@/lib/cities';
+import { getStoredProfile, saveStoredProfile, clearStoredProfile } from '@/lib/profile';
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile>(DEFAULT_USER_PROFILE);
@@ -26,12 +27,7 @@ export default function ProfilePage() {
   const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
-    const savedProfile = localStorage.getItem('breathewise_profile');
-    if (savedProfile) {
-      try {
-        setProfile(JSON.parse(savedProfile));
-      } catch (e) {}
-    }
+    setProfile(getStoredProfile());
   }, []);
 
   const handleSave = async () => {
@@ -47,13 +43,8 @@ export default function ProfilePage() {
       }
     }
 
-    if (!updatedProfile.daily_activity_goal_minutes || Number(updatedProfile.daily_activity_goal_minutes) <= 0) {
-      updatedProfile.daily_activity_goal_minutes = 30;
-    } else {
-      updatedProfile.daily_activity_goal_minutes = Number(updatedProfile.daily_activity_goal_minutes);
-    }
-
-    localStorage.setItem('breathewise_profile', JSON.stringify(updatedProfile));
+    const savedResult = saveStoredProfile(updatedProfile);
+    setProfile(savedResult);
     
     // Also sync to backend if running
     try {
@@ -61,7 +52,7 @@ export default function ProfilePage() {
       await fetch(`${apiBase}/api/v1/user/profile`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedProfile),
+        body: JSON.stringify(savedResult),
       });
     } catch (e) {}
 
@@ -88,7 +79,7 @@ export default function ProfilePage() {
 
   const handleClearData = () => {
     if (confirm('Are you sure you want to clear your local profile and history? This cannot be undone.')) {
-      localStorage.removeItem('breathewise_profile');
+      clearStoredProfile();
       setProfile(DEFAULT_USER_PROFILE);
       alert('Local data cleared successfully.');
     }

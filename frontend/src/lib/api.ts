@@ -1,3 +1,10 @@
+/**
+ * BreatheWise AI - Backend API Client & Meteorological Fallback Layer
+ * ===================================================================
+ * Handles REST communication with the FastAPI backend, providing resilient
+ * client-side fallbacks to Open-Meteo atmospheric endpoints when disconnected.
+ */
+
 import {
   LiveAirQuality,
   HourlyForecast,
