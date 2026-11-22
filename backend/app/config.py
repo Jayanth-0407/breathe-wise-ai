@@ -11,17 +11,14 @@ class Settings(BaseSettings):
     PORT: int = 8000
     HOST: str = "0.0.0.0"
     
-    # CORS
     ALLOWED_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,https://breathewise-ai.vercel.app"
     
-    # Render PostgreSQL / Database URL (loaded strictly from .env or environment)
     DATABASE_URL: str = "sqlite:///./breathewise.db"
     RENDER_POSTGRES_EXTERNAL_URL: str = ""
     RENDER_POSTGRES_INTERNAL_URL: str = ""
-    
-    # Groq API Key & Model (loaded strictly from .env or environment)
+
     GROQ_API_KEY: str = ""
-    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_MODEL: str = "qwen/qwen3.8-27b"
     
     # External APIs
     OPENMETEO_BASE_URL: str = "https://air-quality-api.open-meteo.com/v1/air-quality"
