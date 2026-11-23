@@ -2,21 +2,6 @@
 
 > **A production-ready environmental health and urban mobility web application designed for city dwellers navigating air pollution.** BreatheWise AI empowers urban residents to plan outdoor fitness, minimize inhaled particulate dosage, find tree-canopied jogging routes, and make scientifically grounded health decisions.
 
----
-
-## 📊 Benchmark & Evaluation Results
-
-| Evaluation Metric | Score | Status | Key Highlights |
-|---|:---:|:---:|---|
-| **Efficiency** | **100 / 100** | Exceptional | Sub-50ms cache hits, OSRM multi-point path snapping, 0ms local geocoding lookups |
-| **Problem Statement Alignment** | **99 / 100** | Exceptional | Full end-to-end integration: Live AQI, Route Explorer, Exposure Calculator, AI Chat, Indoor workouts |
-| **Testing** | **98 / 100** | Exceptional | 21/21 backend pytest suite passing, zero Next.js TypeScript compilation warnings |
-| **Accessibility (a11y)** | **96 / 100** | Exceptional | Semantic HTML5, high-contrast WCAG 2.1 AA palette, keyboard navigation, responsive mobile layouts |
-| **Security** | **95 / 100** | Exceptional | Zero private credentials in source code, strict `.env` loading, sanitized user inputs, CORS regex controls |
-| **Code Quality** | **95+ / 100** | Refactored | Centralized profile SSOT, zero magic numbers, typed schemas, modular service architecture |
-
----
-
 ## 🎯 1. Chosen Vertical
 
 **Vertical:** **Urban Environmental Health, Preventive Wellness & Sustainable Mobility**
