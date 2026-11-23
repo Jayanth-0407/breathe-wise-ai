@@ -99,7 +99,6 @@ export function getStoredProfile(): UserProfile {
           : DEFAULT_USER_PROFILE.daily_activity_goal_minutes,
     };
   } catch (error) {
-    console.warn('[ProfileService] Failed to parse stored profile:', error);
     return DEFAULT_USER_PROFILE;
   }
 }
@@ -138,7 +137,6 @@ export function saveStoredProfile(updates: Partial<UserProfile>): UserProfile {
     localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(consolidated));
     return consolidated;
   } catch (error) {
-    console.error('[ProfileService] Failed to save profile:', error);
     return { ...DEFAULT_USER_PROFILE, ...updates };
   }
 }
@@ -153,7 +151,7 @@ export function clearStoredProfile(): void {
     localStorage.removeItem(ACTIVE_ROUTE_STORAGE_KEY);
     localStorage.removeItem(TARGET_GOAL_STORAGE_KEY);
   } catch (error) {
-    console.warn('[ProfileService] Error clearing profile data:', error);
+    // Non-blocking cleanup
   }
 }
 

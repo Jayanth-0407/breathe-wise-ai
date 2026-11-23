@@ -338,7 +338,7 @@ export async function resolveLocationCoordinates(
       }
     }
   } catch (e) {
-    console.warn('Photon geocoding error:', e);
+    // Geocoding fallback cascade
   }
 
   // 4. Fallback: Query Open-Meteo Geocoding
@@ -358,7 +358,7 @@ export async function resolveLocationCoordinates(
       }
     }
   } catch (e) {
-    console.warn('Open-Meteo geocoding error:', e);
+    // Geocoding fallback cascade
   }
 
   return null;
