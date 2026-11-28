@@ -1,5 +1,20 @@
 from typing import List, Union
-from pydantic_settings import BaseSettings, SettingsConfigDict
+import os
+from pathlib import Path
+
+try:
+    from pydantic_settings import BaseSettings, SettingsConfigDict
+except ImportError:
+    from pydantic import BaseModel
+    class BaseSettings(BaseModel):
+        def __init__(self, **data):
+            super().__init__(**data)
+            # Simple env-var loader fallback
+            for field in self.model_fields:
+                val = os.environ.get(field) or os.environ.get(field.upper())
+                if val is not None:
+                    setattr(self, field, val)
+    SettingsConfigDict = dict
 
 
 class Settings(BaseSettings):
@@ -19,6 +34,9 @@ class Settings(BaseSettings):
 
     GROQ_API_KEY: str = ""
     GROQ_MODEL: str = "qwen/qwen3.8-27b"
+    
+    GOOGLE_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-3.5-flash"
     
     # External APIs
     OPENMETEO_BASE_URL: str = "https://air-quality-api.open-meteo.com/v1/air-quality"
